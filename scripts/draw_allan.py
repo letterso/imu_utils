@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 
+
 def loadText(filename, data):
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -37,17 +38,22 @@ plt.title("gyo")
 plt.xlabel("time:sec")
 plt.ylabel("Sigma:deg/h")
 
-plt.loglog(gyo_dt, gyo_data_x, 'o', color="r", markerfacecolor='white')
-plt.loglog(gyo_dt, gyo_data_y, 'o', color="g", markerfacecolor='white')
-plt.loglog(gyo_dt, gyo_data_z, 'o', color="b", markerfacecolor='white')
+plt.loglog(gyo_dt, gyo_data_x, 'o', color="r",
+           markerfacecolor='white', label="gyo_data_x")
+plt.loglog(gyo_dt, gyo_data_y, 'o', color="g",
+           markerfacecolor='white', label="gyo_data_y")
+plt.loglog(gyo_dt, gyo_data_z, 'o', color="b",
+           markerfacecolor='white', label="gyo_data_z")
 
-plt.loglog(gyo_dt, gyo_data_sim_x, 'x', color="r")
-plt.loglog(gyo_dt, gyo_data_sim_y, 'x', color="g")
-plt.loglog(gyo_dt, gyo_data_sim_z, 'x', color="b")
+plt.loglog(gyo_dt, gyo_data_sim_x, 'x', color="r", label="gyo_data_sim_x")
+plt.loglog(gyo_dt, gyo_data_sim_y, 'x', color="g", label="gyo_data_sim_y")
+plt.loglog(gyo_dt, gyo_data_sim_z, 'x', color="b", label="gyo_data_sim_z")
 
-plt.loglog(gyo_dt, gyo_data_avg, 'o', color="black", markerfacecolor='white')
-plt.loglog(gyo_dt, gyo_data_sim_avg, 'x', color="black")
+plt.loglog(gyo_dt, gyo_data_avg, 'o', color="black",
+           markerfacecolor='white', label="gyo_data_avg")
+plt.loglog(gyo_dt, gyo_data_sim_avg, 'x', color="black", label="gyo_data_sim_avg")
 
+plt.legend()
 plt.grid()
 
 # acc
@@ -77,17 +83,18 @@ plt.title("acc")
 plt.xlabel("time:sec")
 plt.ylabel("Sigma:deg/h")
 
-plt.loglog(acc_dt, acc_data_x, 'o', color="r", markerfacecolor='white')
-plt.loglog(acc_dt, acc_data_y, 'o', color="g", markerfacecolor='white')
-plt.loglog(acc_dt, acc_data_z, 'o', color="b", markerfacecolor='white')
+plt.loglog(acc_dt, acc_data_x, 'o', color="r", markerfacecolor='white', label="acc_data_x")
+plt.loglog(acc_dt, acc_data_y, 'o', color="g", markerfacecolor='white', label="acc_data_y")
+plt.loglog(acc_dt, acc_data_z, 'o', color="b", markerfacecolor='white', label="acc_data_z")
 
-plt.loglog(acc_dt, acc_data_sim_x, 'x', color="r")
-plt.loglog(acc_dt, acc_data_sim_y, 'x', color="g")
-plt.loglog(acc_dt, acc_data_sim_z, 'x', color="b")
+plt.loglog(acc_dt, acc_data_sim_x, 'x', color="r", label="acc_data_sim_x")
+plt.loglog(acc_dt, acc_data_sim_y, 'x', color="g", label="acc_data_sim_y")
+plt.loglog(acc_dt, acc_data_sim_z, 'x', color="b", label="acc_data_sim_z")
 
-plt.loglog(acc_dt, acc_data_avg, 'o', color="black", markerfacecolor='white')
-plt.loglog(acc_dt, acc_data_sim_avg, 'x', color="black")
+plt.loglog(acc_dt, acc_data_avg, 'o', color="black", markerfacecolor='white', label="acc_data_avg")
+plt.loglog(acc_dt, acc_data_sim_avg, 'x', color="black", label="acc_data_sim_avg")
 
+plt.legend()
 plt.grid()
 
 # display
