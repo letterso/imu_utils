@@ -12,10 +12,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -fPIC")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
     roscpp
-    std_msgs
+    rosbag
+    sensor_msgs
     geometry_msgs
-    nav_msgs
-    code_utils
     )
 
 ## System dependencies are found with CMake's conventions
