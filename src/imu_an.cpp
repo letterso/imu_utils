@@ -11,7 +11,6 @@
 #include "gyr_lib/fitallan_gyr.h"
 
 #include <iostream>
-#include <opencv2/opencv.hpp>
 #include <queue>
 #include <ros/ros.h>
 #include <rosbag/bag.h>
@@ -78,90 +77,67 @@ void writeData3(const std::string sensor_name,
     out_z.close();
 }
 
-void writeYAML(const std::string data_path,
-               const std::string sensor_name,
-               const imu::FitAllanGyr &gyr_x,
-               const imu::FitAllanGyr &gyr_y,
-               const imu::FitAllanGyr &gyr_z,
-               const imu::FitAllanAcc &acc_x,
-               const imu::FitAllanAcc &acc_y,
-               const imu::FitAllanAcc &acc_z)
+void writeResult(const std::string data_path,
+                 const std::string sensor_name,
+                 const imu::FitAllanGyr &gyr_x,
+                 const imu::FitAllanGyr &gyr_y,
+                 const imu::FitAllanGyr &gyr_z,
+                 const imu::FitAllanAcc &acc_x,
+                 const imu::FitAllanAcc &acc_y,
+                 const imu::FitAllanAcc &acc_z)
 {
-    cv::FileStorage fs(data_path + sensor_name + "_imu_param.yaml", cv::FileStorage::WRITE);
+    std::ofstream out_result;
+    out_result.open(data_path + sensor_name + "_imu_param.txt", std::ios::trunc);
 
-    fs << "type"
-       << "IMU";
+    out_result << std::scientific << std::setprecision(16);
 
-    fs << "name" << sensor_name;
+    out_result << "name: " << sensor_name << '\n';
 
-    fs << "Gyr";
-    fs << "{";
-    fs << "unit"
-       << " rad/s";
+    out_result << "Gyr:" << '\n';
+    out_result << "  unit:"
+               << " rad/s" << '\n';
 
-    fs << "avg-axis";
-    fs << "{";
-    fs << std::string("gyr_n")
-       << (gyr_x.getWhiteNoise() + gyr_y.getWhiteNoise() + gyr_z.getWhiteNoise()) / 3;
-    fs << std::string("gyr_w")
-       << (gyr_x.getBiasInstability() + gyr_y.getBiasInstability() + gyr_z.getBiasInstability()) / 3;
+    out_result << "  avg-axis:" << '\n';
+    out_result << "    gyr_n: "
+               << (gyr_x.getWhiteNoise() + gyr_y.getWhiteNoise() + gyr_z.getWhiteNoise()) / 3 << '\n';
+    out_result << "    gyr_w: "
+               << (gyr_x.getBiasInstability() + gyr_y.getBiasInstability() + gyr_z.getBiasInstability()) / 3 << '\n';
 
-    fs << "}";
+    out_result << "  x-axis:" << '\n';
+    out_result << "    gyr_n: " << gyr_x.getWhiteNoise() << '\n';
+    out_result << "    gyr_w: " << gyr_x.getBiasInstability() << '\n';
 
-    fs << "x-axis";
-    fs << "{";
-    fs << std::string("gyr_n") << gyr_x.getWhiteNoise();
-    fs << std::string("gyr_w") << gyr_x.getBiasInstability();
-    fs << "}";
+    out_result << "  y-axis:" << '\n';
+    out_result << "    gyr_n: " << gyr_y.getWhiteNoise() << '\n';
+    out_result << "    gyr_w: " << gyr_y.getBiasInstability() << '\n';
 
-    fs << "y-axis";
-    fs << "{";
-    fs << std::string("gyr_n") << gyr_y.getWhiteNoise();
-    fs << std::string("gyr_w") << gyr_y.getBiasInstability();
-    fs << "}";
+    out_result << "  z-axis:" << '\n';
+    out_result << "    gyr_n: " << gyr_z.getWhiteNoise() << '\n';
+    out_result << "    gyr_w: " << gyr_z.getBiasInstability() << '\n';
 
-    fs << "z-axis";
-    fs << "{";
-    fs << std::string("gyr_n") << gyr_z.getWhiteNoise();
-    fs << std::string("gyr_w") << gyr_z.getBiasInstability();
-    fs << "}";
+    out_result << "Acc" << '\n';
+    out_result << "  unit:"
+               << " m/s^2" << '\n';
 
-    fs << "}";
+    out_result << "  avg-axis:" << '\n';
+    out_result << "    acc_n: "
+               << (acc_x.getWhiteNoise() + acc_y.getWhiteNoise() + acc_z.getWhiteNoise()) / 3 << '\n';
+    out_result << "    acc_w: "
+               << (acc_x.getBiasInstability() + acc_y.getBiasInstability() + acc_z.getBiasInstability()) / 3 << '\n';
 
-    fs << "Acc";
-    fs << "{";
-    fs << "unit"
-       << " m/s^2";
+    out_result << "  x-axis:" << '\n';
+    out_result << "    acc_n: " << acc_x.getWhiteNoise() << '\n';
+    out_result << "    acc_w: " << acc_x.getBiasInstability() << '\n';
 
-    fs << "avg-axis";
-    fs << "{";
-    fs << std::string("acc_n")
-       << (acc_x.getWhiteNoise() + acc_y.getWhiteNoise() + acc_z.getWhiteNoise()) / 3;
-    fs << std::string("acc_w")
-       << (acc_x.getBiasInstability() + acc_y.getBiasInstability() + acc_z.getBiasInstability()) / 3;
-    fs << "}";
+    out_result << "  y-axis:" << '\n';
+    out_result << "    acc_n: " << acc_y.getWhiteNoise() << '\n';
+    out_result << "    acc_w: " << acc_y.getBiasInstability() << '\n';
 
-    fs << "x-axis";
-    fs << "{";
-    fs << std::string("acc_n") << acc_x.getWhiteNoise();
-    fs << std::string("acc_w") << acc_x.getBiasInstability();
-    fs << "}";
+    out_result << "  z-axis:" << '\n';
+    out_result << "    acc_n: " << acc_z.getWhiteNoise() << '\n';
+    out_result << "    acc_w: " << acc_z.getBiasInstability() << '\n';
 
-    fs << "y-axis";
-    fs << "{";
-    fs << std::string("acc_n") << acc_y.getWhiteNoise();
-    fs << std::string("acc_w") << acc_y.getBiasInstability();
-    fs << "}";
-
-    fs << "z-axis";
-    fs << "{";
-    fs << std::string("acc_n") << acc_z.getWhiteNoise();
-    fs << std::string("acc_w") << acc_z.getBiasInstability();
-    fs << "}";
-
-    fs << "}";
-
-    fs.release();
+    out_result.close();
 }
 
 template <typename T>
@@ -323,7 +299,7 @@ int main(int argc, char **argv)
     writeData3(IMU_NAME + "_sim_acc", acc_ts_x, acc_sim_d_x, acc_sim_d_y, acc_sim_d_z);
     writeData3(IMU_NAME + "_acc", acc_ts_x, acc_d_x, acc_d_y, acc_d_z);
 
-    writeYAML(data_save_path, IMU_NAME, fit_gyr_x, fit_gyr_y, fit_gyr_z, fit_acc_x, fit_acc_y, fit_acc_z);
+    writeResult(data_save_path, IMU_NAME, fit_gyr_x, fit_gyr_y, fit_gyr_z, fit_acc_x, fit_acc_y, fit_acc_z);
 
     return 0;
 }

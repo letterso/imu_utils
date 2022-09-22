@@ -19,7 +19,6 @@ find_package(catkin REQUIRED
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenCV REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(Eigen3  REQUIRED)
 include_directories(
@@ -45,4 +44,4 @@ add_executable(imu_an
     ${ACC_LIB_SOURCE_FILES}
     )
 
-target_link_libraries(imu_an ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(imu_an ${catkin_LIBRARIES} ${CERES_LIBRARIES})

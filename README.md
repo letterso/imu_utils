@@ -1,3 +1,9 @@
+# 修改
+
+移除`code_utils`和`opencv`依赖，使用matplotlib替代matlab绘图。
+
+设置`imu_utils_bringup.launch`里的`imu_topic`,`imu_name`和`imu_bag`，然后运行launch文件。
+
 # imu_utils
 
 A ROS package tool to analyze the IMU performance. C++ version of Allan Variance Tool. 
