@@ -115,7 +115,7 @@ void writeResult(const std::string data_path,
     out_result << "    gyr_n: " << gyr_z.getWhiteNoise() << '\n';
     out_result << "    gyr_w: " << gyr_z.getBiasInstability() << '\n';
 
-    out_result << "Acc" << '\n';
+    out_result << "Acc:" << '\n';
     out_result << "  unit:"
                << " m/s^2" << '\n';
 
@@ -201,24 +201,24 @@ int main(int argc, char **argv)
             sensor_msgs::ImuConstPtr imu_ptr = m.instantiate<sensor_msgs::Imu>();
 
             double time = imu_ptr->header.stamp.toSec();
-            gyr_x->pushRadPerSec(imu_ptr->angular_velocity.x, time);
-            gyr_y->pushRadPerSec(imu_ptr->angular_velocity.y, time);
-            gyr_z->pushRadPerSec(imu_ptr->angular_velocity.z, time);
+            gyr_x->pushRadPerSec(-imu_ptr->angular_velocity.x, time);
+            gyr_y->pushRadPerSec(-imu_ptr->angular_velocity.y, time);
+            gyr_z->pushRadPerSec(-imu_ptr->angular_velocity.z, time);
             acc_x->pushMPerSec2(imu_ptr->linear_acceleration.x, time);
             acc_y->pushMPerSec2(imu_ptr->linear_acceleration.y, time);
             acc_z->pushMPerSec2(imu_ptr->linear_acceleration.z, time);
 
-            if (start)
-            {
-                start_t = time;
-                start = false;
-            }
-            else
-            {
-                double time_min = (time - start_t) / 60;
-                if (time_min > max_time_min)
-                    break;
-            }
+            // if (start)
+            // {
+            //     start_t = time;
+            //     start = false;
+            // }
+            // else
+            // {
+            //     double time_min = (time - start_t) / 60;
+            //     if (time_min > max_time_min)
+            //         break;
+            // }
         }
     }
 
