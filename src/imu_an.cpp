@@ -1,10 +1,3 @@
-//#define BACKWARD_HAS_DW 1
-//#include "backward.hpp"
-// namespace backward
-//{
-// backward::SignalHandling sh;
-//}
-
 #include "acc_lib/allan_acc.h"
 #include "acc_lib/fitallan_acc.h"
 #include "gyr_lib/allan_gyr.h"
@@ -25,7 +18,7 @@ imu::AllanAcc *acc_y;
 imu::AllanAcc *acc_z;
 std::string data_save_path;
 
-void writeData1(const std::string sensor_name, //
+void writeData1(const std::string sensor_name,
                 const std::vector<double> &gyro_ts_x,
                 const std::vector<double> &gyro_d)
 {
@@ -162,21 +155,15 @@ int main(int argc, char **argv)
     ros::NodeHandle n("~");
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
 
-    std::string IMU_TOPIC;
-    std::string IMU_NAME;
-    std::string IMU_BAG;
-    int max_cluster;
-
-    double start_t = 0;
-    bool start = true;
-    int max_time_min = 120;
-
-    IMU_TOPIC = readParam<std::string>(n, "imu_topic");
-    IMU_NAME = readParam<std::string>(n, "imu_name");
-    IMU_BAG = readParam<std::string>(n, "imu_bag");
+    bool init_flag = false;
+    double init_time = 0;
+    std::string imu_topic = readParam<std::string>(n, "imu_topic");
+    std::string imu_name = readParam<std::string>(n, "imu_name");
+    std::string imu_bag = readParam<std::string>(n, "imu_bag");
     data_save_path = readParam<std::string>(n, "data_save_path");
-    max_time_min = readParam<int>(n, "max_time_min");
-    max_cluster = readParam<int>(n, "max_cluster");
+    int start_time = readParam<int>(n, "start_time");
+    int end_time = readParam<int>(n, "end_time");
+    int max_cluster = readParam<int>(n, "max_cluster");
 
     gyr_x = new imu::AllanGyr("gyr x", max_cluster);
     gyr_y = new imu::AllanGyr("gyr y", max_cluster);
@@ -189,42 +176,40 @@ int main(int argc, char **argv)
     std::cout << "start read imu data." << std::endl;
     // bag
     rosbag::Bag bag;
-    bag.open(IMU_BAG);
+    bag.open(imu_bag);
 
     // unpack
-    for (rosbag::MessageInstance const m : rosbag::View(bag))
-    {
-        const std::string &topic = m.getTopic();
+    for (rosbag::MessageInstance const m : rosbag::View(bag)) {
+      const std::string &topic = m.getTopic();
 
-        if (topic == IMU_TOPIC)
-        {
-            sensor_msgs::ImuConstPtr imu_ptr = m.instantiate<sensor_msgs::Imu>();
+      if (topic == imu_topic) {
+        sensor_msgs::ImuConstPtr imu_ptr = m.instantiate<sensor_msgs::Imu>();
 
-            double time = imu_ptr->header.stamp.toSec();
-            gyr_x->pushRadPerSec(-imu_ptr->angular_velocity.x, time);
-            gyr_y->pushRadPerSec(-imu_ptr->angular_velocity.y, time);
-            gyr_z->pushRadPerSec(-imu_ptr->angular_velocity.z, time);
-            acc_x->pushMPerSec2(imu_ptr->linear_acceleration.x, time);
-            acc_y->pushMPerSec2(imu_ptr->linear_acceleration.y, time);
-            acc_z->pushMPerSec2(imu_ptr->linear_acceleration.z, time);
-
-            // if (start)
-            // {
-            //     start_t = time;
-            //     start = false;
-            // }
-            // else
-            // {
-            //     double time_min = (time - start_t) / 60;
-            //     if (time_min > max_time_min)
-            //         break;
-            // }
+        // 过滤区间范围内数据
+        double time = imu_ptr->header.stamp.toSec();
+        if (!init_flag) {
+          init_time = time;
+          init_flag = true;
+        } else {
+          double time_cur = (time - init_time) / 60;
+          if (time_cur < start_time)
+            continue;
+          if (time_cur > end_time)
+            break;
         }
+
+        gyr_x->pushRadPerSec(-imu_ptr->angular_velocity.x, time);
+        gyr_y->pushRadPerSec(-imu_ptr->angular_velocity.y, time);
+        gyr_z->pushRadPerSec(-imu_ptr->angular_velocity.z, time);
+        acc_x->pushMPerSec2(imu_ptr->linear_acceleration.x, time);
+        acc_y->pushMPerSec2(imu_ptr->linear_acceleration.y, time);
+        acc_z->pushMPerSec2(imu_ptr->linear_acceleration.z, time);
+      }
     }
 
     std::cout << "finish read imu data." << std::endl;
 
-    //
+    // 计算
     gyr_x->calc();
     std::vector<double> gyro_v_x = gyr_x->getVariance();
     std::vector<double> gyro_d_x = gyr_x->getDeviation();
@@ -259,8 +244,8 @@ int main(int argc, char **argv)
     std::vector<double> gyro_sim_d_y = fit_gyr_y.calcSimDeviation(gyro_ts_y);
     std::vector<double> gyro_sim_d_z = fit_gyr_z.calcSimDeviation(gyro_ts_z);
 
-    writeData3(IMU_NAME + "_sim_gyr", gyro_ts_x, gyro_sim_d_x, gyro_sim_d_y, gyro_sim_d_z);
-    writeData3(IMU_NAME + "_gyr", gyro_ts_x, gyro_d_x, gyro_d_y, gyro_d_z);
+    writeData3(imu_name + "_sim_gyr", gyro_ts_x, gyro_sim_d_x, gyro_sim_d_y, gyro_sim_d_z);
+    writeData3(imu_name + "_gyr", gyro_ts_x, gyro_d_x, gyro_d_y, gyro_d_z);
 
     std::cout << "==============================================" << std::endl;
     std::cout << "==============================================" << std::endl;
@@ -296,10 +281,10 @@ int main(int argc, char **argv)
     std::vector<double> acc_sim_d_y = fit_acc_y.calcSimDeviation(acc_ts_x);
     std::vector<double> acc_sim_d_z = fit_acc_z.calcSimDeviation(acc_ts_x);
 
-    writeData3(IMU_NAME + "_sim_acc", acc_ts_x, acc_sim_d_x, acc_sim_d_y, acc_sim_d_z);
-    writeData3(IMU_NAME + "_acc", acc_ts_x, acc_d_x, acc_d_y, acc_d_z);
+    writeData3(imu_name + "_sim_acc", acc_ts_x, acc_sim_d_x, acc_sim_d_y, acc_sim_d_z);
+    writeData3(imu_name + "_acc", acc_ts_x, acc_d_x, acc_d_y, acc_d_z);
 
-    writeResult(data_save_path, IMU_NAME, fit_gyr_x, fit_gyr_y, fit_gyr_z, fit_acc_x, fit_acc_y, fit_acc_z);
+    writeResult(data_save_path, imu_name, fit_gyr_x, fit_gyr_y, fit_gyr_z, fit_acc_x, fit_acc_y, fit_acc_z);
 
     return 0;
 }

@@ -4,6 +4,8 @@
 
 设置`imu_utils_bringup.launch`里的`imu_topic`,`imu_name`和`imu_bag`，然后运行launch文件。
 
+增加参数`start_time`和`end_time`用于设置标定数据范围。
+
 # imu_utils
 
 A ROS package tool to analyze the IMU performance. C++ version of Allan Variance Tool. 
